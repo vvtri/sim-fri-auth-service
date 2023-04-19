@@ -17,12 +17,23 @@ const globalConfig = {
       algorithm: 'HS256',
       expiresTime: process.env.AUTH_JWT_REFRESH_TOKEN_EXPIRE,
     },
+
+    verificationExpires: 86400, // seconds = 24h
   },
 
   firebase: {
-  privateKey: process.env.FIREBASE_PRIVATE_KEY,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     projectId: process.env.FIREBASE_PROJECT_ID,
+  },
+
+  sendGrid: {
+    apiKey: process.env.SG_API_KEY,
+    sender: process.env.SG_SENDER,
+    templateId: {
+      verificationEmail: process.env.SG_TEMPLATE_VERIFICATION_EMAIL,
+      resetPassword: process.env.SG_TEMPLATE_RESET_PASSWORD,
+    },
   },
 };
 

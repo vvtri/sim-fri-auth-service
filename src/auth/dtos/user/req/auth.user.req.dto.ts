@@ -9,9 +9,22 @@ export class LoginUserReqDto {
 }
 
 export class RegisterUserReqDto {
-  @IsValidText({ maxLength: 1000 })
-  firebaseAuthToken: string;
+  @IsValidEmail()
+  email: string;
 
   @IsValidText()
   password: string;
+}
+
+export class ResendVerificationEmailUserReqDto {
+  @IsValidEmail()
+  email: string;
+}
+
+export class VerificationEmailUserReqDto {
+  @IsValidEmail()
+  email: string;
+
+  @IsValidText()
+  code: string;
 }

@@ -5,8 +5,10 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmCustomModule } from 'common';
 import { GlobalConfig } from '../common/configs/global.config';
 import { AuthUserController } from './controllers/user/auth.user.controller';
+import { UserTokenRepository } from './repositories/user-token.repository';
 import { UserRepository } from './repositories/user.repository';
 import { AuthUserService } from './services/user/auth.user.service';
+import { JwtAuthenUserStrategy } from './strategies/jwt-authen.user.strategy';
 
 @Module({
   imports: [
@@ -20,9 +22,9 @@ import { AuthUserService } from './services/user/auth.user.service';
         },
       }),
     }),
-    TypeOrmCustomModule.forFeature([UserRepository]),
+    TypeOrmCustomModule.forFeature([UserRepository, UserTokenRepository]),
   ],
   controllers: [AuthUserController],
-  providers: [AuthUserService],
+  providers: [AuthUserService, JwtAuthenUserStrategy],
 })
 export class AuthModule {}

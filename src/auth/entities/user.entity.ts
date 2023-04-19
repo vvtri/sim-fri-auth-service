@@ -1,22 +1,24 @@
 import { BaseEntity } from 'common';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { UserStatus } from '../enums/user.enum';
+import { UserToken } from './user-token.entity';
 
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50 })
+  @Column({ length: 1000 })
   password: string;
+
+  @Column({ type: 'enum', enum: UserStatus })
+  status: UserStatus;
 
   @Column('text', { array: true, nullable: true })
   deviceTokens: string[];
 
   @Column({ name: 'phone_number', length: 50, nullable: true })
   phoneNumber: string;
-
-  @Column({ length: 50, nullable: true })
-  firebaseId: string;
 
   @Column({ name: 'address', length: 255, nullable: true })
   address: string;
@@ -29,4 +31,7 @@ export class User extends BaseEntity {
 
   @Column({ name: 'birth_date', type: 'timestamptz', nullable: true })
   birthDate: Date;
+
+  @OneToMany(() => UserToken, (ut) => ut.user)
+  userTokens: UserToken[];
 }

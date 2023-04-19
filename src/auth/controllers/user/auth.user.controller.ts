@@ -8,6 +8,8 @@ import {
 import {
   LoginUserReqDto,
   RegisterUserReqDto,
+  ResendVerificationEmailUserReqDto,
+  VerificationEmailUserReqDto,
 } from '../../dtos/user/req/auth.user.req.dto';
 import { User } from '../../entities/user.entity';
 import { AuthUserService } from '../../services/user/auth.user.service';
@@ -25,6 +27,16 @@ export class AuthUserController {
   @Post('login')
   login(@Body() body: LoginUserReqDto) {
     return this.authUserService.login(body);
+  }
+
+  @Post('verify')
+  verify(@Body() body: VerificationEmailUserReqDto) {
+    return this.authUserService.verify(body);
+  }
+
+  @Post('resend-verification')
+  resendVerificationEmail(@Body() body: ResendVerificationEmailUserReqDto) {
+    return this.authUserService.resendVerificationEmail(body);
   }
 
   @Get('current')

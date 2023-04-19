@@ -7,10 +7,12 @@ export interface AuthTokenResDtoParams {
 export class AuthTokenResDto {
   accessToken: string;
   refreshToken: string;
+  isVerified = true;
 
   static mapProperty(dto: AuthTokenResDto, { data }: AuthTokenResDtoParams) {
     dto.accessToken = data.accessToken;
     dto.refreshToken = data.refreshToken;
+    dto.isVerified = data.isVerified;
   }
 
   static forCustomer(params: AuthTokenResDtoParams) {
