@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { Delete, Query } from '@nestjs/common/decorators';
+import { JwtService } from '@nestjs/jwt';
 import { ApiTags } from '@nestjs/swagger';
 import {
   AuthenticateUser,
@@ -7,6 +7,7 @@ import {
 } from '../../../common/decorators/auth.decorator';
 import {
   LoginUserReqDto,
+  RefreshTokenReqDto,
   RegisterUserReqDto,
   ResendVerificationEmailUserReqDto,
   VerificationEmailUserReqDto,
@@ -14,10 +15,13 @@ import {
 import { User } from '../../entities/user.entity';
 import { AuthUserService } from '../../services/user/auth.user.service';
 
-@Controller(`user/auth`)
+@Controller(`user`)
 @ApiTags('Auth Customer')
 export class AuthUserController {
-  constructor(private authUserService: AuthUserService) {}
+  constructor(
+    private authUserService: AuthUserService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('register')
   register(@Body() body: RegisterUserReqDto) {
@@ -37,6 +41,11 @@ export class AuthUserController {
   @Post('resend-verification')
   resendVerificationEmail(@Body() body: ResendVerificationEmailUserReqDto) {
     return this.authUserService.resendVerificationEmail(body);
+  }
+
+  @Post('refresh-token')
+  refreshToken(@Body() body: RefreshTokenReqDto) {
+    return this.authUserService.refreshToken(body);
   }
 
   @Get('current')

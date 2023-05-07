@@ -1,8 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
@@ -10,31 +6,29 @@ import {
   AuthStatusCode,
   ConflictExc,
   ExpectationFailedExc,
-  ForbiddenExc,
   NotFoundExc,
   UnAuthorizedExc,
 } from 'common';
-import firebaseAdmin from 'firebase-admin';
+import dayjs from 'dayjs';
+import genRandNumb from 'random-number-csprng';
 import { Transactional } from 'typeorm-transactional';
 import { GlobalConfig } from '../../../common/configs/global.config';
 import { EmailService } from '../../../util/services/email.service';
 import { AuthTokenResDto } from '../../dtos/common/res/auth-token.res.dto';
+import { UserResDto } from '../../dtos/common/res/user.res.dto';
 import {
   LoginUserReqDto,
+  RefreshTokenReqDto,
   RegisterUserReqDto,
   ResendVerificationEmailUserReqDto,
   VerificationEmailUserReqDto,
 } from '../../dtos/user/req/auth.user.req.dto';
 import { User } from '../../entities/user.entity';
+import { UserTokenStatus, UserTokenType } from '../../enums/user-token.enum';
 import { UserStatus } from '../../enums/user.enum';
+import { UserTokenRepository } from '../../repositories/user-token.repository';
 import { UserRepository } from '../../repositories/user.repository';
 import { JwtAuthPayload } from '../../types/jwt-payload.type';
-import genRandNumb from 'random-number-csprng';
-import { UserTokenRepository } from '../../repositories/user-token.repository';
-import { UserTokenStatus, UserTokenType } from '../../enums/user-token.enum';
-import dayjs from 'dayjs';
-import { LessThan } from 'typeorm';
-import { UserResDto } from '../../dtos/common/res/customer.res.dto';
 
 @Injectable()
 export class AuthUserService {
@@ -58,12 +52,12 @@ export class AuthUserService {
     const user = await this.userRepo.findOneBy({ email });
 
     if (!user)
-      throw new NotFoundException({ status: AuthStatusCode.INVALID_EMAIL });
+      throw new NotFoundExc({ statusCode: AuthStatusCode.USER_NOT_FOUND });
 
     const isMatchPassword = await bcrypt.compare(password, user.password);
     if (!isMatchPassword) {
-      throw new BadRequestException({
-        status: AuthStatusCode.INVALID_PASSWORD,
+      throw new ExpectationFailedExc({
+        statusCode: AuthStatusCode.INVALID_PASSWORD,
       });
     }
 
@@ -86,7 +80,8 @@ export class AuthUserService {
 
     let user = await this.userRepo.findOneBy({ email });
 
-    if (user) throw new ConflictExc({ statusCode: 1 });
+    if (user)
+      throw new ConflictExc({ statusCode: AuthStatusCode.USER_EXISTED });
 
     const hash = await bcrypt.hash(password, 12);
 
@@ -142,11 +137,11 @@ export class AuthUserService {
     const user = await this.userRepo.findOneBy({ email });
 
     if (!user)
-      throw new NotFoundExc({ statusCode: AuthStatusCode.INVALID_EMAIL });
+      throw new NotFoundExc({ statusCode: AuthStatusCode.USER_NOT_FOUND });
 
     if (user.status !== UserStatus.UNVERIFIED)
       throw new ExpectationFailedExc({
-        statusCode: AuthStatusCode.INVALID_EMAIL,
+        statusCode: AuthStatusCode.USER_VERIFIED,
       });
 
     const resendTimeToDay = await this.userTokenRepo
@@ -154,11 +149,12 @@ export class AuthUserService {
       .where('ut.userId = :userId', { userId: user.id })
       .andWhere('ut.type = :type', { type: UserTokenType.VERIFICATION_EMAIL })
       .andWhere('ut.status = :status', { status: UserTokenStatus.ACTIVE })
+      .andWhere(`date_part('day', ut.createdAt) = date_part('day', now())`)
       .getCount();
 
     if (resendTimeToDay > 10)
       throw new ExpectationFailedExc({
-        statusCode: AuthStatusCode.INVALID_EMAIL,
+        statusCode: AuthStatusCode.TOO_MANY_VERIFICATION_REQUEST,
       });
 
     await this.sendAndSaveVerificationToken(user);
@@ -183,8 +179,14 @@ export class AuthUserService {
       order: { createdAt: 'DESC' },
     });
 
-    if (!userToken || userToken.token !== code) {
-      throw new ExpectationFailedExc({ statusCode: 1 });
+    if (
+      !userToken ||
+      userToken.token !== code ||
+      userToken.expiresAt < new Date()
+    ) {
+      throw new ExpectationFailedExc({
+        statusCode: AuthStatusCode.INVALID_USER_TOKEN,
+      });
     }
 
     await this.userRepo.update(user.id, { status: UserStatus.ACTIVE });
@@ -199,6 +201,25 @@ export class AuthUserService {
     return AuthTokenResDto.forCustomer({
       data: { accessToken, refreshToken, isVerified: true },
     });
+  }
+
+  async refreshToken(dto: RefreshTokenReqDto) {
+    const { refreshToken } = dto;
+
+    try {
+      const payload = this.jwtService.verify<JwtAuthPayload>(refreshToken, {
+        secret: this.configService.get('auth.refreshToken.secret'),
+      });
+      const accessToken = this.generateAccessToken({
+        userId: payload.userId,
+      });
+
+      return AuthTokenResDto.forCustomer({ data: { accessToken } });
+    } catch (error) {
+      throw new UnAuthorizedExc({
+        statusCode: AuthStatusCode.INVALID_REFRESH_TOKEN,
+      });
+    }
   }
 
   private generateAccessToken(payload: JwtAuthPayload) {

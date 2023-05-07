@@ -5,7 +5,7 @@ import { GlobalConfig } from '../../common/configs/global.config';
 
 @Injectable()
 export class EmailService {
-  private from: { name?: string; email: string };
+  private from: string;
   constructor(configService: ConfigService<GlobalConfig>) {
     sgClient.setApiKey(configService.get('sendGrid.apiKey'));
     this.from = configService.get('sendGrid.sender');

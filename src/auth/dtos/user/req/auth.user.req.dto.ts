@@ -28,3 +28,8 @@ export class VerificationEmailUserReqDto {
   @IsValidText()
   code: string;
 }
+
+export class RefreshTokenReqDto {
+  @IsValidText()
+  refreshToken: string;
+}
