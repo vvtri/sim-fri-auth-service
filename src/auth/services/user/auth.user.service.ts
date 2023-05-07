@@ -9,8 +9,8 @@ import {
   KAFKA_TOPIC,
   NotFoundExc,
   UnAuthorizedExc,
-  UserCreatedPayload,
-  UserUpdatedPayload,
+  UserCreatedKafkaPayload,
+  UserUpdatedKafkaPayload,
 } from 'common';
 import dayjs from 'dayjs';
 import genRandNumb from 'random-number-csprng';
@@ -246,7 +246,7 @@ export class AuthUserService {
   }
 
   private async sendUserCreatedKafka(user: User) {
-    const kafkaPayload = new UserCreatedPayload({
+    const kafkaPayload = new UserCreatedKafkaPayload({
       address: user.address,
       birthDate: user.birthDate,
       email: user.email,
@@ -255,14 +255,14 @@ export class AuthUserService {
       phoneNumber: user.phoneNumber,
       status: user.status,
     });
-    await this.kafkaProducer.send<UserCreatedPayload>({
+    await this.kafkaProducer.send<UserCreatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_CREATED,
       messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
     });
   }
 
   private async sendUserUpdatedKafka(user: User) {
-    const kafkaPayload = new UserUpdatedPayload({
+    const kafkaPayload = new UserUpdatedKafkaPayload({
       address: user.address,
       birthDate: user.birthDate,
       email: user.email,
@@ -271,7 +271,7 @@ export class AuthUserService {
       phoneNumber: user.phoneNumber,
       status: user.status,
     });
-    await this.kafkaProducer.send<UserUpdatedPayload>({
+    await this.kafkaProducer.send<UserUpdatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_UPDATED,
       messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
     });

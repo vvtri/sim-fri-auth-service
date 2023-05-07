@@ -1,7 +1,8 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthStatusCode, CustomException, ForbiddenExc } from 'common';
+import { CustomException, ForbiddenExc } from 'common';
+import { AuthStatusCode } from 'shared';
 import { IS_PUBLIC_KEY } from '../../common/constants/index.constant';
 import { StrategyName } from '../constants/index.constant';
 

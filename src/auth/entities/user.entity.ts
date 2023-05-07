@@ -1,4 +1,5 @@
-import { BaseEntity, UserStatus } from 'common';
+import { BaseEntity } from 'common';
+import { UserStatus } from 'shared';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { File } from '../../file/entities/file.entity';
 import { UserToken } from './user-token.entity';

@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class ImplFile1683444612514 implements MigrationInterface {
-    name = 'ImplFile1683444612514'
+export class ImplFile1683452319999 implements MigrationInterface {
+    name = 'ImplFile1683452319999'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."file_audience_type_enum" AS ENUM('ONLY_ME', 'FRIEND', 'PUBLIC')`);

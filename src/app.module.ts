@@ -16,6 +16,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import globalConfig, { GlobalConfig } from './common/configs/global.config';
 import { consumerConfig, kafkaConfig } from './common/configs/kafka.config';
+import { FileModule } from './file/file.module';
 import { UtilModule } from './util/util.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { UtilModule } from './util/util.module';
     KafkaModule.forRoot({ kafkaConfig, consumerConfig }),
     AuthModule,
     UtilModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [
