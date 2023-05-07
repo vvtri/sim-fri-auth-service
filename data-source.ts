@@ -1,5 +1,6 @@
 import { boolean } from 'boolean';
-import { AppEnvironment, NamingStrategy } from 'common';
+import { NamingStrategy } from 'common';
+import { AppEnvironment } from 'shared';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 require('dotenv').config();
