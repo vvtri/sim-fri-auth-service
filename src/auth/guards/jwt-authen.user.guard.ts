@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthStatusCode, ForbiddenExc } from 'common';
+import { AuthStatusCode, CustomException, ForbiddenExc } from 'common';
 import { IS_PUBLIC_KEY } from '../../common/constants/index.constant';
 import { StrategyName } from '../constants/index.constant';
 
@@ -28,6 +28,8 @@ export class JwtAuthenUserGuard extends AuthGuard(StrategyName.USER) {
     context: ExecutionContext,
     status?: any,
   ): TUser {
+    if (err instanceof CustomException) throw err;
+
     if (info instanceof Error || !user || err)
       throw new ForbiddenExc({
         statusCode: AuthStatusCode.INVALID_ACCESS_TOKEN,

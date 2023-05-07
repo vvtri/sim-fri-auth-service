@@ -1,16 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { KafkaProducer } from '@vvtri/nestjs-kafka';
 import bcrypt from 'bcryptjs';
 import {
-  AuthStatusCode,
   ConflictExc,
   ExpectationFailedExc,
+  KAFKA_TOPIC,
   NotFoundExc,
   UnAuthorizedExc,
+  UserCreatedPayload,
+  UserUpdatedPayload,
 } from 'common';
 import dayjs from 'dayjs';
 import genRandNumb from 'random-number-csprng';
+import { AuthStatusCode, UserTokenStatus, UserTokenType } from 'shared';
+import { UserStatus } from 'shared/dist/src';
 import { Transactional } from 'typeorm-transactional';
 import { GlobalConfig } from '../../../common/configs/global.config';
 import { EmailService } from '../../../util/services/email.service';
@@ -24,8 +29,6 @@ import {
   VerificationEmailUserReqDto,
 } from '../../dtos/user/req/auth.user.req.dto';
 import { User } from '../../entities/user.entity';
-import { UserTokenStatus, UserTokenType } from '../../enums/user-token.enum';
-import { UserStatus } from '../../enums/user.enum';
 import { UserTokenRepository } from '../../repositories/user-token.repository';
 import { UserRepository } from '../../repositories/user.repository';
 import { JwtAuthPayload } from '../../types/jwt-payload.type';
@@ -39,6 +42,7 @@ export class AuthUserService {
     private jwtService: JwtService,
     private configService: ConfigService<GlobalConfig>,
     private emailService: EmailService,
+    private kafkaProducer: KafkaProducer,
   ) {}
 
   async getCurrent(user: User) {
@@ -93,6 +97,8 @@ export class AuthUserService {
     await this.userRepo.save(user);
 
     await this.sendAndSaveVerificationToken(user);
+
+    await this.sendUserCreatedKafka(user);
 
     return AuthTokenResDto.forCustomer({ data: { isVerified: false } });
   }
@@ -189,7 +195,8 @@ export class AuthUserService {
       });
     }
 
-    await this.userRepo.update(user.id, { status: UserStatus.ACTIVE });
+    user.status = UserStatus.ACTIVE;
+    await this.userRepo.save(user);
     this.userTokenRepo
       .update(userToken.id, { status: UserTokenStatus.INACTIVE })
       .catch((err) => this.logger.log(err));
@@ -197,6 +204,8 @@ export class AuthUserService {
     const payload: JwtAuthPayload = { userId: user.id };
     const accessToken = this.generateAccessToken(payload);
     const refreshToken = this.generateRefreshToken(payload);
+
+    await this.sendUserUpdatedKafka(user);
 
     return AuthTokenResDto.forCustomer({
       data: { accessToken, refreshToken, isVerified: true },
@@ -233,6 +242,38 @@ export class AuthUserService {
     return this.jwtService.sign(payload, {
       expiresIn: this.configService.get('auth.accessToken.expiresTime'),
       secret: this.configService.get('auth.refreshToken.secret'),
+    });
+  }
+
+  private async sendUserCreatedKafka(user: User) {
+    const kafkaPayload = new UserCreatedPayload({
+      address: user.address,
+      birthDate: user.birthDate,
+      email: user.email,
+      id: user.id,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      status: user.status,
+    });
+    await this.kafkaProducer.send<UserCreatedPayload>({
+      topic: KAFKA_TOPIC.USER_CREATED,
+      messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
+    });
+  }
+
+  private async sendUserUpdatedKafka(user: User) {
+    const kafkaPayload = new UserUpdatedPayload({
+      address: user.address,
+      birthDate: user.birthDate,
+      email: user.email,
+      id: user.id,
+      name: user.name,
+      phoneNumber: user.phoneNumber,
+      status: user.status,
+    });
+    await this.kafkaProducer.send<UserUpdatedPayload>({
+      topic: KAFKA_TOPIC.USER_UPDATED,
+      messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
     });
   }
 }

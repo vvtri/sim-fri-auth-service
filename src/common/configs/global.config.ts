@@ -1,5 +1,5 @@
-import { RecursiveKeyOf } from 'common';
 import * as dotenv from 'dotenv';
+import { RecursiveKeyOf } from 'shared';
 dotenv.config();
 
 const globalConfig = {

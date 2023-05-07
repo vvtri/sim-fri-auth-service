@@ -1,8 +1,5 @@
-import {
-  BaseEntity,
-  PartialIndexWithSoftDelete,
-  UniqueWithSoftDelete,
-} from 'common';
+import { BaseEntity } from 'common';
+import { UserTokenStatus, UserTokenType } from 'shared';
 import {
   Column,
   Entity,
@@ -10,7 +7,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserTokenStatus, UserTokenType } from '../enums/user-token.enum';
 import { User } from './user.entity';
 
 @Entity()

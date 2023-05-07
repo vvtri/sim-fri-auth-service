@@ -1,5 +1,5 @@
 import { boolean } from 'boolean';
-import { NamingStrategy, AppEnvironment } from 'common';
+import { AppEnvironment, NamingStrategy } from 'common';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 require('dotenv').config();
@@ -21,7 +21,6 @@ let config: DataSourceOptions & PostgresConnectionOptions = {
   logging: boolean(process.env.SHOW_SQL),
   migrationsTransactionMode: 'all',
   namingStrategy: new NamingStrategy(),
-  ssl: true,
 };
 
 switch (process.env.NODE_ENV) {

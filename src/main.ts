@@ -4,9 +4,10 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const prefix = '/api/auth-service';
 
   app.enableCors({ origin: '*' });
-  app.setGlobalPrefix('api/auth');
+  app.setGlobalPrefix(prefix);
 
   const config = new DocumentBuilder()
     .setTitle('Auth Service API')
@@ -16,7 +17,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/auth/swagger', app, document, {
+  SwaggerModule.setup(`${prefix}/swagger`, app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },

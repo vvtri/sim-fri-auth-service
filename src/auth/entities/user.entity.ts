@@ -1,6 +1,6 @@
-import { BaseEntity } from 'common';
+import { BaseEntity, UserStatus } from 'common';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserStatus } from '../enums/user.enum';
+import { File } from '../../file/entities/file.entity';
 import { UserToken } from './user-token.entity';
 
 @Entity()
@@ -34,4 +34,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => UserToken, (ut) => ut.user)
   userTokens: UserToken[];
+
+  @OneToMany(() => File, (f) => f.user)
+  files: File[];
 }

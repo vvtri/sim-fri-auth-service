@@ -1,4 +1,4 @@
-import { PartialNonFunctionProperties } from 'common';
+import { PartialNonFunctionProperties } from 'shared';
 
 export interface AuthTokenResDtoParams {
   data: PartialNonFunctionProperties<AuthTokenResDto>;
