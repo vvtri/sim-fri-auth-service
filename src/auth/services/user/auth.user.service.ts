@@ -10,6 +10,7 @@ import {
   NotFoundExc,
   UnAuthorizedExc,
   UserCreatedKafkaPayload,
+  UserProfileCreatedKafkaPayload,
   UserUpdatedKafkaPayload,
 } from 'common';
 import dayjs from 'dayjs';
@@ -18,6 +19,8 @@ import { AuthStatusCode, UserTokenStatus, UserTokenType } from 'shared';
 import { UserStatus } from 'shared/dist/src';
 import { Transactional } from 'typeorm-transactional';
 import { GlobalConfig } from '../../../common/configs/global.config';
+import { UserProfile } from '../../../profile/entities/user-profile.entity';
+import { UserProfileRepository } from '../../../profile/repositories/user-profile.repository';
 import { EmailService } from '../../../util/services/email.service';
 import { AuthTokenResDto } from '../../dtos/common/res/auth-token.res.dto';
 import { UserResDto } from '../../dtos/common/res/user.res.dto';
@@ -43,6 +46,7 @@ export class AuthUserService {
     private configService: ConfigService<GlobalConfig>,
     private emailService: EmailService,
     private kafkaProducer: KafkaProducer,
+    private userProfileRepo: UserProfileRepository,
   ) {}
 
   async getCurrent(user: User) {
@@ -96,9 +100,13 @@ export class AuthUserService {
     });
     await this.userRepo.save(user);
 
+    const userProfile = this.userProfileRepo.create({ userId: user.id });
+    await this.userProfileRepo.save(userProfile);
+
     await this.sendAndSaveVerificationToken(user);
 
     await this.sendUserCreatedKafka(user);
+    await this.sendUserProfileCreatedKafka(userProfile);
 
     return AuthTokenResDto.forCustomer({ data: { isVerified: false } });
   }
@@ -247,11 +255,8 @@ export class AuthUserService {
 
   private async sendUserCreatedKafka(user: User) {
     const kafkaPayload = new UserCreatedKafkaPayload({
-      address: user.address,
-      birthDate: user.birthDate,
       email: user.email,
       id: user.id,
-      name: user.name,
       phoneNumber: user.phoneNumber,
       status: user.status,
     });
@@ -261,15 +266,24 @@ export class AuthUserService {
     });
   }
 
+  private async sendUserProfileCreatedKafka(userProfile: UserProfile) {
+    const kafkaPayload = new UserProfileCreatedKafkaPayload({
+      ...userProfile,
+    });
+    await this.kafkaProducer.send<UserProfileCreatedKafkaPayload>({
+      topic: KAFKA_TOPIC.USER_PROFILE_CREATED,
+      messages: [
+        { value: kafkaPayload, headers: { id: String(userProfile.userId) } },
+      ],
+    });
+  }
+
   private async sendUserUpdatedKafka(user: User) {
     const kafkaPayload = new UserUpdatedKafkaPayload({
-      address: user.address,
-      birthDate: user.birthDate,
-      email: user.email,
       id: user.id,
-      name: user.name,
       phoneNumber: user.phoneNumber,
       status: user.status,
+      email: user.email,
     });
     await this.kafkaProducer.send<UserUpdatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_UPDATED,

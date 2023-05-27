@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmCustomModule } from 'common';
 import { GlobalConfig } from '../common/configs/global.config';
+import { UserProfileRepository } from '../profile/repositories/user-profile.repository';
 import { AuthUserController } from './controllers/user/auth.user.controller';
 import { UserTokenRepository } from './repositories/user-token.repository';
 import { UserRepository } from './repositories/user.repository';
@@ -22,7 +23,11 @@ import { JwtAuthenUserStrategy } from './strategies/jwt-authen.user.strategy';
         },
       }),
     }),
-    TypeOrmCustomModule.forFeature([UserRepository, UserTokenRepository]),
+    TypeOrmCustomModule.forFeature([
+      UserRepository,
+      UserTokenRepository,
+      UserProfileRepository,
+    ]),
   ],
   controllers: [AuthUserController],
   providers: [AuthUserService, JwtAuthenUserStrategy],

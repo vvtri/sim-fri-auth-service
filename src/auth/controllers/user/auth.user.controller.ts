@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiTags } from '@nestjs/swagger';
+import { PrefixType } from 'common';
 import {
   AuthenticateUser,
   CurrentUser,
@@ -15,8 +16,8 @@ import {
 import { User } from '../../entities/user.entity';
 import { AuthUserService } from '../../services/user/auth.user.service';
 
-@Controller(`user`)
-@ApiTags('Auth Customer')
+@Controller(`${PrefixType.USER}/auth`)
+@ApiTags('Auth User')
 export class AuthUserController {
   constructor(
     private authUserService: AuthUserService,
