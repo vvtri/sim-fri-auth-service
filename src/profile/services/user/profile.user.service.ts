@@ -22,11 +22,22 @@ export class ProfileUserService {
   ) {}
 
   @Transactional()
-  async getProfile(user: User) {
+  async getUserProfile(id: number, user: User) {
+    const profile = await this.userProfile.findOneOrThrowNotFoundExc({
+      where: { userId: id },
+      relations: { avatar: true, user: true },
+    });
+
+    return UserProfileResDto.forUser({ data: profile });
+  }
+
+  @Transactional()
+  async getMyProfile(user: User) {
     const profile = await this.userProfile.findOneOrThrowNotFoundExc({
       where: { userId: user.id },
       relations: { avatar: true },
     });
+    profile.user = user;
 
     return UserProfileResDto.forUser({ data: profile });
   }
@@ -46,7 +57,7 @@ export class ProfileUserService {
 
     let userProfile = await this.userProfile.findOneOrThrowNotFoundExc({
       where: { userId: user.id },
-      relations: { avatar: true },
+      // relations: { avatar: true },
     });
 
     userProfile = {
@@ -62,7 +73,7 @@ export class ProfileUserService {
     };
     await this.userProfile.save(userProfile);
 
-    const result = await this.getProfile(user);
+    const result = await this.getMyProfile(user);
 
     await this.sendUserProfileUpdatedKafka(userProfile);
 

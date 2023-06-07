@@ -34,7 +34,11 @@ import { UtilModule } from './util/util.module';
         return addTransactionalDataSource(dataSource);
       },
     }),
-    KafkaModule.forRoot({ kafkaConfig, consumerConfig }),
+    KafkaModule.forRoot({
+      kafkaConfig,
+      consumerConfig,
+      shouldRunConsumerAsync: true,
+    }),
     AuthModule,
     UtilModule,
     FileModule,

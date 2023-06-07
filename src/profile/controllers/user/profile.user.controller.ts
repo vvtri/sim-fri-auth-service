@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PrefixType } from 'common';
 import { User } from '../../../auth/entities/user.entity';
@@ -15,9 +22,17 @@ import { ProfileUserService } from '../../services/user/profile.user.service';
 export class ProfileUserController {
   constructor(private profileUserService: ProfileUserService) {}
 
+  @Get(':id')
+  getUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ) {
+    return this.profileUserService.getUserProfile(id, user);
+  }
+
   @Get()
-  getProfile(@CurrentUser() user: User) {
-    return this.profileUserService.getProfile(user);
+  getMyProfile(@CurrentUser() user: User) {
+    return this.profileUserService.getMyProfile(user);
   }
 
   @Patch()
