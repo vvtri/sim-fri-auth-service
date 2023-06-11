@@ -6,7 +6,6 @@ import {
 } from 'common';
 import { Transactional } from 'typeorm-transactional';
 import { User } from '../../../auth/entities/user.entity';
-import { UserRepository } from '../../../auth/repositories/user.repository';
 import { UserProfileResDto } from '../../dtos/common/res/user-profile.res.dto';
 import { UpdateProfileUserReqDto } from '../../dtos/user/req/profile.user.req.dto';
 import { UserProfile } from '../../entities/user-profile.entity';
@@ -16,8 +15,6 @@ import { UserProfileRepository } from '../../repositories/user-profile.repositor
 export class ProfileUserService {
   constructor(
     private kafkaProducer: KafkaProducer,
-
-    private userRepo: UserRepository,
     private userProfile: UserProfileRepository,
   ) {}
 
@@ -57,7 +54,6 @@ export class ProfileUserService {
 
     let userProfile = await this.userProfile.findOneOrThrowNotFoundExc({
       where: { userId: user.id },
-      // relations: { avatar: true },
     });
 
     userProfile = {

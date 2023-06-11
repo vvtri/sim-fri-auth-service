@@ -48,7 +48,7 @@ import { UtilModule } from './util/util.module';
   providers: [
     AppService,
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
-    { provide: APP_PIPE, useValue: new ValidationPipe() },
+    { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true }) },
   ],
 })
 export class AppModule implements OnModuleInit {
