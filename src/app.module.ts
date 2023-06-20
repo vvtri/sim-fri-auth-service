@@ -5,7 +5,6 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KafkaModule } from '@vvtri/nestjs-kafka';
 import { AllExceptionsFilter } from 'common';
-import firebase from 'firebase-admin';
 import {
   addTransactionalDataSource,
   initializeTransactionalContext,
@@ -54,15 +53,5 @@ import { UtilModule } from './util/util.module';
 export class AppModule implements OnModuleInit {
   constructor(private configService: ConfigService<GlobalConfig>) {}
 
-  async onModuleInit() {
-    firebase.initializeApp({
-      credential: firebase.credential.cert({
-        privateKey: this.configService
-          .get<string>('firebase.privateKey')
-          .replace(/\\n/gm, '\n'),
-        clientEmail: this.configService.get('firebase.clientEmail'),
-        projectId: this.configService.get('firebase.projectId'),
-      } as Partial<firebase.ServiceAccount>),
-    });
-  }
+  async onModuleInit() {}
 }

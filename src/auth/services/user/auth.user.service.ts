@@ -262,7 +262,7 @@ export class AuthUserService {
     });
     await this.kafkaProducer.send<UserCreatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_CREATED,
-      messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
+      messages: [{ value: kafkaPayload, key: String(user.id) }],
     });
   }
 
@@ -272,9 +272,7 @@ export class AuthUserService {
     });
     await this.kafkaProducer.send<UserProfileCreatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_PROFILE_CREATED,
-      messages: [
-        { value: kafkaPayload, headers: { id: String(userProfile.userId) } },
-      ],
+      messages: [{ value: kafkaPayload, key: String(userProfile.userId) }],
     });
   }
 
@@ -287,7 +285,7 @@ export class AuthUserService {
     });
     await this.kafkaProducer.send<UserUpdatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_UPDATED,
-      messages: [{ value: kafkaPayload, headers: { id: String(user.id) } }],
+      messages: [{ value: kafkaPayload, key: String(user.id) }],
     });
   }
 }

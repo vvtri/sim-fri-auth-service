@@ -82,9 +82,7 @@ export class ProfileUserService {
     });
     await this.kafkaProducer.send<UserProfileUpdatedKafkaPayload>({
       topic: KAFKA_TOPIC.USER_PROFILE_UPDATED,
-      messages: [
-        { value: kafkaPayload, headers: { id: String(userProfile.userId) } },
-      ],
+      messages: [{ value: kafkaPayload, key: String(userProfile.userId) }],
     });
   }
 }
