@@ -16,12 +16,15 @@ jobs:
       DEPLOYMENT_NAME: auth-service
 
     steps:
+      - uses: actions/checkout@v3
+
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITAL_ACCESS_TOKEN }}
 
-      - uses: actions/checkout@v3
+      - name: Save DigitalOcean kubeconfig Staging
+        run: doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
 
       - name: Docker login
         run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
@@ -31,9 +34,6 @@ jobs:
 
       - name: Push to Docker hub
         run: docker push $IMAGE_NAME
-
-      - name: Save DigitalOcean kubeconfig Staging
-        run: doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
 
       # Kubernetes rollout the latest image
       - name: Kubernetes rollout the latest image
