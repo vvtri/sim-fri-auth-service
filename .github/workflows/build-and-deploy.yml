@@ -11,6 +11,9 @@ jobs:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       IMAGE_NAME: vtri/auth-service
+      DIGITAL_ACCESS_TOKEN: ${{ secrets.DIGITAL_ACCESS_TOKEN }}
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+      DEPLOYMENT_NAME: auth-service
 
     steps:
       - uses: actions/checkout@v3
@@ -23,3 +26,15 @@ jobs:
 
       - name: Push to Docker hub
         run: docker push $IMAGE_NAME
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: $DIGITAL_ACCESS_TOKEN
+
+      - name: Save DigitalOcean kubeconfig Staging
+        run: doctl kubernetes cluster kubeconfig save $CLUSTER_NAME
+
+      # Kubernetes rollout the latest image
+      - name: Kubernetes rollout the latest image
+        run: kubectl -n karma-stats rollout restart deployment karma-stats
