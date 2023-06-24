@@ -4,6 +4,7 @@ import {
   KAFKA_TOPIC,
   UserProfileCreatedKafkaPayload as UserProfileUpdatedKafkaPayload,
 } from 'common';
+import { UserStatus } from 'shared';
 import { Transactional } from 'typeorm-transactional';
 import { User } from '../../../auth/entities/user.entity';
 import { UserProfileResDto } from '../../dtos/common/res/user-profile.res.dto';
@@ -21,7 +22,7 @@ export class ProfileUserService {
   @Transactional()
   async getUserProfile(id: number, user: User) {
     const profile = await this.userProfile.findOneOrThrowNotFoundExc({
-      where: { userId: id },
+      where: { userId: id, user: { status: UserStatus.ACTIVE } },
       relations: { avatar: true, user: true },
     });
 
