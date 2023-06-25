@@ -24,10 +24,10 @@ export class ProfileUserController {
 
   @Get(':id')
   getUserProfile(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) userId: number,
     @CurrentUser() user: User,
   ) {
-    return this.profileUserService.getUserProfile(id, user);
+    return this.profileUserService.getUserProfile(userId, user);
   }
 
   @Get()
