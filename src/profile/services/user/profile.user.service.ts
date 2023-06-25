@@ -59,14 +59,14 @@ export class ProfileUserService {
 
     userProfile = {
       ...userProfile,
-      ...(address && { address }),
+      ...(typeof address === 'string' && { address }),
       ...(avatarId && { avatarId }),
       ...(birthDate && { birthDate }),
-      ...(hometown && { hometown }),
+      ...(typeof hometown === 'string' && { hometown }),
       ...(name && { name }),
       ...(relationshipStatus && { relationshipStatus }),
-      ...(school && { school }),
-      ...(workplace && { workplace }),
+      ...(typeof school === 'string' && { school }),
+      ...(typeof workplace === 'string' && { workplace }),
     };
     await this.userProfile.save(userProfile);
 
